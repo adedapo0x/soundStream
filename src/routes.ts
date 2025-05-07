@@ -51,4 +51,23 @@ router.get('/callback', (req: Request, res: Response) => {
     }
 })
 
+router.get('search', (req, res) => {
+    const { q } = req.query;
+    if (typeof q == "string"){
+        spotifyAPI.searchTracks(q).then(searchData => {
+            const trackUri = searchData.body.tracks?.items[0].uri;
+            res.json({
+                uri: trackUri
+            })
+        }).catch(error => {
+            res.json({
+                error: "Error getting track"
+            })
+        })
+    }
+    
+})
+
+
+export default router;
 
