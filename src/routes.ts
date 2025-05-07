@@ -29,8 +29,25 @@ router.get('/callback', (req: Request, res: Response) => {
 
     if (typeof code === "string"){
         spotifyAPI.authorizationCodeGrant(code).then(data => {
-            
+            const accessToken = data.body.access_token;
+            const refreshToken = data.body.refresh_token;
+            const expiresIn = data.body.expires_in;
+
+            spotifyAPI.setAccessToken(accessToken);
+            spotifyAPI.setRefreshToken(refreshToken);
+
+            res.json({message: "Access and refresh token gotten"});
+
+            setInterval(async () => {
+                const data = await spotifyAPI.refreshAccessToken();
+                const accessTokenRegenerated = data.body.access_token;
+                spotifyAPI.setAccessToken(accessTokenRegenerated);
+            }, expiresIn / (1.2 * 1000));
+        }).catch(error => {
+            res.json({error: "Error getting token"})
         })
+    } else {
+        res.redirect('/#error=invalid_code'); 
     }
 })
 
